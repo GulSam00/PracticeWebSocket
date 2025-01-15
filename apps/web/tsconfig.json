@@ -5,17 +5,21 @@
       {
         "name": "next"
       }
-    ]
+    ],
+    "strict": true,
+    "baseUrl": "app",
+    "noEmit": true
   },
   "include": [
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
     "next-env.d.ts",
-    "next.config.js",
     "dist/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    ".next",
+    "dist"
   ]
 }
