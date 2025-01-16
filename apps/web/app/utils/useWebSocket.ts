@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 interface MessageType {
   action: actionType;
   roomId: string;
-  userId?: string;
+  nickname?: string;
   content?: string;
 }
 
@@ -12,7 +12,7 @@ interface ChatRoomType {
   users: string[]; // 방에 참여한 사용자 목록
 }
 
-type actionType = 'create' | 'join' | 'leave' | 'message';
+type actionType = 'create' | 'join' | 'message' | 'leave' | 'delete';
 
 const useWebSocket = () => {
   const [input, setInput] = useState<string>(''); // 수신 메시지 저장
@@ -39,18 +39,37 @@ const useWebSocket = () => {
       const action = data.action;
 
       switch (action) {
+        case 'connect': {
+          break;
+        }
         case 'create': {
+          const serverRoom = data.chatRooms;
+          setChatRooms([...serverRoom]);
           console.log(`Room created with ID: ${data.roomId}`);
-          setChatRooms(prev => [...prev, { roomId: data.roomId, users: [data.userId] }]);
           break;
         }
 
         case 'join': {
+          const serverRoom = data.chatRooms;
+          setChatRooms([...serverRoom]);
           console.log(`Joined room with ID: ${data.roomId}`);
           break;
         }
+
+        case 'message': {
+          console.log(`Message from ${data.nickname}: ${data.content}`);
+          break;
+        }
         case 'leave': {
+          const serverRoom = data.chatRooms;
+          setChatRooms([...serverRoom]);
           console.log('Left the room');
+          break;
+        }
+        case 'delete': {
+          const serverRoom = data.chatRooms;
+          setChatRooms([...serverRoom]);
+          console.log('delete room');
           break;
         }
         case 'error': {
@@ -77,45 +96,69 @@ const useWebSocket = () => {
     };
   }, [url]);
 
-  const createRoom = (roomId: string, userId: string) => {
+  const createRoom = (roomId: string, nickname: string) => {
     const socket = socketRef.current;
 
     if (!socket) return;
     const message: MessageType = {
       action: 'create',
       roomId,
-      userId,
+      nickname,
     };
     socket.send(JSON.stringify(message));
   };
 
   // 채팅방 참가
-  const joinRoom = (roomId: string, userId: string) => {
+  const joinRoom = (roomId: string, nickname: string) => {
     const socket = socketRef.current;
     if (!socket) return;
     const message: MessageType = {
       action: 'join',
-      roomId: roomId,
-      userId: userId,
+      roomId,
+      nickname,
+    };
+    socket.send(JSON.stringify(message));
+  };
+
+  // 채팅방 나가기
+  const leaveRoom = (roomId: string, nickname: string) => {
+    const socket = socketRef.current;
+    if (!socket) return;
+
+    const message: MessageType = {
+      action: 'leave',
+      roomId,
+      nickname,
+    };
+    socket.send(JSON.stringify(message));
+  };
+
+  const deleteRoom = (roomId: string) => {
+    const socket = socketRef.current;
+    if (!socket) return;
+
+    const message: MessageType = {
+      action: 'delete',
+      roomId,
     };
     socket.send(JSON.stringify(message));
   };
 
   // 메시지 전송
-  const sendMessage = (roomId: string, userId: string) => {
+  const sendMessage = (roomId: string, nickname: string) => {
     const socket = socketRef.current;
     if (!socket) return;
 
     const message: MessageType = {
       action: 'message',
       roomId,
-      userId,
+      nickname,
       content: input,
     };
     socket.send(JSON.stringify(message));
   };
 
-  return { input, setInput, chatRooms, isConnected, createRoom, joinRoom, sendMessage };
+  return { input, setInput, chatRooms, isConnected, createRoom, joinRoom, leaveRoom, deleteRoom, sendMessage };
 };
 
 export default useWebSocket;
