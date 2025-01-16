@@ -4,7 +4,9 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev:client1": "next dev -p 3001 --turbopack",
+    "dev:client2": "next dev -p 3002 --turbopack",
+    "dev": "concurrently \"npm run dev:client1\" \"npm run dev:client2\"",
     "build": "next build",
     "start": "next start",
     "lint": "next lint --max-warnings 0",
@@ -22,6 +24,7 @@
     "@types/node": "^20",
     "@types/react": "18.3.1",
     "@types/react-dom": "18.3.0",
+    "concurrently": "^9.1.2",
     "typescript": "5.5.4"
   }
 }
